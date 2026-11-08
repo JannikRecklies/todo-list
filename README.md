@@ -16,10 +16,10 @@ A small todo list app built with React and Express. Users can browse todo lists 
 
 The app is split into two parts:
 
-- **Frontend** (`frontend/`): a Create React App single-page app using Material UI. `App` renders the page shell, `TodoLists` shows the list overview, and `TodoListForm` edits a single list.
+- **Frontend** (`frontend/`): a Create React App single-page app using Material UI. `TodoLists` shows the list overview, and `TodoListForm` edits the selected list.
 - **Backend** (`backend/`): an Express server with CORS and JSON body parsing. It currently exposes only a `GET /` route.
 
-Todo list data is currently mocked in the frontend and held in React state. The frontend does not call the backend yet, so changes are lost on refresh.
+The frontend does not call the backend yet. `TodoLists` loads a fixed set of sample lists, and saving only updates React state, so changes are lost on refresh.
 
 The diagram source is [docs/diagrams/architecture.html](docs/diagrams/architecture.html).
 

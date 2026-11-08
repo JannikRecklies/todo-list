@@ -28,7 +28,7 @@
       padding: 3rem 2rem;
     }
 
-    .frame { max-width: 1200px; width: 100%; }
+    .frame { max-width: 900px; width: 100%; }
     .diagram-container { width: 100%; overflow-x: auto; }
 
     .eyebrow {
@@ -51,7 +51,7 @@
       margin-bottom: 1.5rem;
     }
 
-    svg { width: 100%; min-width: 960px; display: block; }
+    svg { width: 100%; min-width: 800px; display: block; }
     @media print {
       .diagram-container { overflow-x: visible; }
       svg { min-width: 0; }
@@ -64,74 +64,65 @@
     <h1>Todo list architecture</h1>
 
     <div class="diagram-container">
-      <svg viewBox="0 0 960 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="architecture-title architecture-desc">
+      <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="architecture-title architecture-desc">
         <title id="architecture-title">Todo list architecture</title>
-        <desc id="architecture-desc">A React client runs in the browser and renders todo lists from in-memory mock data, while a separate Express server currently only answers a hello route; the planned client-to-server API call is not built yet.</desc>
+        <desc id="architecture-desc">The browser loads the React frontend, where TodoLists opens into TodoListForm; TodoListForm would call the Express backend, but that call is not built yet, and the backend only serves GET /.</desc>
         <defs>
           <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
-          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker>
         </defs>
 
         <rect width="100%" height="100%" fill="#f5f5f5"/>
 
         <!-- Zones -->
-        <rect x="250" y="100" width="240" height="260" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
-        <rect x="262" y="104" width="96" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="266" y="113" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em">CLIENT · :3000</text>
+        <rect x="220" y="60" width="320" height="320" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+        <rect x="232" y="66" width="168" height="18" rx="2" fill="#f5f5f5"/>
+        <text x="238" y="79" fill="#5a6580" font-size="11" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">FRONTEND · :3000</text>
 
-        <rect x="580" y="100" width="240" height="120" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
-        <rect x="592" y="104" width="96" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="596" y="113" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em">SERVER · :3001</text>
+        <rect x="580" y="60" width="200" height="320" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+        <rect x="592" y="66" width="168" height="18" rx="2" fill="#f5f5f5"/>
+        <text x="598" y="79" fill="#5a6580" font-size="11" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">BACKEND · :3001</text>
 
         <!-- Arrows (drawn before nodes) -->
-        <line x1="200" y1="160" x2="280" y2="160" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <rect x="218" y="134" width="44" height="14" fill="#f5f5f5"/>
-        <text x="240" y="144" text-anchor="middle" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">LOADS</text>
+        <line x1="174" y1="160" x2="240" y2="160" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="180" y="140" width="54" height="14" fill="#f5f5f5"/>
+        <text x="207" y="151" text-anchor="middle" fill="#4f5d75" font-size="11" font-family="'Geist Mono', ui-monospace, monospace">LOADS</text>
 
-        <line x1="375" y1="190" x2="375" y2="260" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <rect x="383" y="218" width="44" height="14" fill="#f5f5f5"/>
-        <text x="387" y="228" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">CALLS</text>
+        <line x1="380" y1="200" x2="380" y2="270" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="388" y="229" width="54" height="14" fill="#f5f5f5"/>
+        <text x="392" y="240" fill="#4f5d75" font-size="11" font-family="'Geist Mono', ui-monospace, monospace">OPENS</text>
 
-        <line x1="470" y1="160" x2="600" y2="160" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-        <rect x="512" y="134" width="56" height="14" fill="#f5f5f5"/>
-        <text x="540" y="144" text-anchor="middle" fill="#5a6580" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">NOT YET</text>
+        <line x1="520" y1="310" x2="596" y2="310" stroke="#4f5d75" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <rect x="526" y="286" width="64" height="14" fill="#f5f5f5"/>
+        <text x="558" y="297" text-anchor="middle" fill="#4f5d75" font-size="11" font-family="'Geist Mono', ui-monospace, monospace">NOT YET</text>
 
-        <!-- Browser user -->
-        <rect x="40" y="130" width="160" height="60" rx="6" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
-        <rect x="52" y="140" width="40" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="56" y="149" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">INPUT</text>
-        <text x="52" y="170" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', system-ui, sans-serif">Browser</text>
-        <text x="52" y="182" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">localhost:3000</text>
+        <!-- Browser -->
+        <rect x="24" y="120" width="150" height="80" rx="6" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+        <text x="40" y="152" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', system-ui, sans-serif">Browser</text>
+        <text x="40" y="174" fill="#5a6580" font-size="12" font-family="'Geist Mono', ui-monospace, monospace">localhost:3000</text>
 
-        <!-- React app (focal) -->
-        <rect x="280" y="130" width="190" height="60" rx="6" fill="#f5f5f5"/>
-        <rect x="280" y="130" width="190" height="60" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1.2"/>
-        <rect x="292" y="140" width="72" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="296" y="149" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">COMPONENT</text>
-        <text x="292" y="170" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', system-ui, sans-serif">React app</text>
-        <text x="292" y="182" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">App · TodoLists · TodoListForm</text>
+        <!-- TodoLists -->
+        <rect x="240" y="120" width="280" height="80" rx="6" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+        <text x="256" y="152" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', system-ui, sans-serif">TodoLists</text>
+        <text x="256" y="174" fill="#5a6580" font-size="12" font-family="'Geist Mono', ui-monospace, monospace">Shows all lists, click to open</text>
 
-        <!-- Mock data store -->
-        <rect x="280" y="260" width="190" height="60" rx="6" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
-        <rect x="292" y="270" width="40" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="296" y="279" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">STATE</text>
-        <text x="292" y="300" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', system-ui, sans-serif">Mock todo lists</text>
-        <text x="292" y="312" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">fetchTodoLists() · 1s delay</text>
+        <!-- TodoListForm (focal) -->
+        <rect x="240" y="270" width="280" height="80" rx="6" fill="#f5f5f5"/>
+        <rect x="240" y="270" width="280" height="80" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="256" y="302" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', system-ui, sans-serif">TodoListForm</text>
+        <text x="256" y="324" fill="#5a6580" font-size="12" font-family="'Geist Mono', ui-monospace, monospace">Edit, add and delete todos</text>
 
         <!-- Express server -->
-        <rect x="600" y="130" width="190" height="60" rx="6" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
-        <rect x="612" y="140" width="40" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="616" y="149" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">API</text>
-        <text x="612" y="170" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', system-ui, sans-serif">Express server</text>
-        <text x="612" y="182" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">GET / only · no todo routes</text>
+        <rect x="596" y="270" width="168" height="80" rx="6" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+        <text x="612" y="302" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist', system-ui, sans-serif">Express</text>
+        <text x="612" y="324" fill="#5a6580" font-size="12" font-family="'Geist Mono', ui-monospace, monospace">Only GET /</text>
 
         <!-- Legend strip -->
-        <line x1="40" y1="402" x2="72" y2="402" stroke="#4f5d75" stroke-width="1.2"/>
-        <text x="80" y="405" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">IMPLEMENTED</text>
-        <line x1="200" y1="402" x2="232" y2="402" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
-        <text x="240" y="405" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">NOT YET BUILT</text>
-        <rect x="380" y="396" width="14" height="12" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1.2"/>
-        <text x="402" y="405" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">FOCAL COMPONENT</text>
+        <line x1="24" y1="394" x2="56" y2="394" stroke="#4f5d75" stroke-width="1.5"/>
+        <text x="64" y="398" fill="#5a6580" font-size="11" font-family="'Geist Mono', ui-monospace, monospace">IMPLEMENTED</text>
+        <line x1="200" y1="394" x2="232" y2="394" stroke="#4f5d75" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <text x="240" y="398" fill="#5a6580" font-size="11" font-family="'Geist Mono', ui-monospace, monospace">NOT YET BUILT</text>
+        <rect x="390" y="388" width="14" height="12" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="410" y="398" fill="#5a6580" font-size="11" font-family="'Geist Mono', ui-monospace, monospace">FOCAL COMPONENT</text>
       </svg>
     </div>
   </div>
