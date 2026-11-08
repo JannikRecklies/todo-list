@@ -1,56 +1,63 @@
-# Sellpy web interview
+# Todo list
 
-Welcome to Sellpy's web interview repo!
+A small todo list app built with React and Express. Users can browse todo lists and add, edit, and delete the todos within them in the browser.
 
-## Assignment
-Your assignment is to improve this todo list application. At the moment the application is simple and can only create and remove todos.
-As is, nothing is persisted in the server. As a result all state is cleared when refreshing the page!
-Below follows one main task and 4 additional tasks. Your assignment is to complete the main task together with at least 2 out of 4 of the additional tasks.
-If you feel constrained by time (which is totally fine!), **prioritize quality over quantity**.
+> This project started as a take-home assignment. The original brief is kept in [ASSIGNMENT.md](ASSIGNMENT.md).
 
-### Main Task
-Persist the todo lists on the server. Persisting in a database is not required, i.e. simple JS structures like objects/arrays that don't persist between server restarts are fine. If you do go for an actual DB (again not required), be sure to include instructions of how to get it up and running.
+## Features
 
-### Additional tasks
-- Don't require users to press save when an item is added/edited in the todo list. (Autosave functionality)
-- Make it possible to indicate that a todo is completed.
-- Indicate that a todo list is completed if all todo items within are completed.
-- Add a date for completion to todo items. Indicate how much time is remaining or overdue.
+- Browse a set of todo lists in a sidebar card
+- Open a list to edit its todos, add new ones, and delete existing ones
+- Save a list to update it in the client state
 
-## Submission
-Before submitting, read through all changes one last time - **code quality matters**!
+## Architecture
 
-If you have developed without ESLint set up, run `npm run lint` in both `/backend` and `/frontend` and fix any errors/warnings.
+![Todo list architecture](docs/diagrams/architecture.svg)
 
-Send a link to your forked repository to your contact at Sellpy. Don't forget to mention which tasks you completed.
+The app is split into two parts:
 
-Don't forget to bring your computer to the interview, as you'll need it to make code changes during the session!
+- **Frontend** (`frontend/`): a Create React App single-page app using Material UI. `App` renders the page shell, `TodoLists` shows the list overview, and `TodoListForm` edits a single list.
+- **Backend** (`backend/`): an Express server with CORS and JSON body parsing. It currently exposes only a `GET /` route.
 
-## Prerequisites
+Todo list data is currently mocked in the frontend and held in React state. The frontend does not call the backend yet, so changes are lost on refresh.
 
-NodeJS - if you don't already have it installed, check out [nvm](https://github.com/nvm-sh/nvm).
+The diagram source is [docs/diagrams/architecture.html](docs/diagrams/architecture.html).
+
+## Tech stack
+
+| Area | Technology |
+| --- | --- |
+| Frontend | React 18, Material UI 5, Create React App |
+| Backend | Node.js, Express 4, cors |
+| Linting | ESLint (`backend/`, `frontend/`), Prettier config in `.prettierrc` |
 
 ## Getting started
-Fork the repository (see top-right button on GitHub) and clone the fork to your computer.
-### To start the backend:
 
- - Navigate to the backend folder
- - Run `npm ci`
- - Run `npm start`
+Requires Node.js. The version is pinned in [`.nvmrc`](.nvmrc).
 
-### To start the frontend:
+```bash
+# Backend, runs on http://localhost:3001
+cd backend
+npm ci
+npm start
 
- - Navigate to the frontend folder
- - Run `npm ci`
- - Run `npm start`
+# Frontend, runs on http://localhost:3000
+cd frontend
+npm ci
+npm start
+```
 
- A browsertab will automatically open and load the app.
+Lint each package with `npm run lint` from its folder.
 
-### Development set-up
-If you don't have a favorite editor we highly recommend [VSCode](https://code.visualstudio.com). We've also had some ESLint rules set up which will help you catch bugs etc. If you're using VSCode, install the regular [ESLint plugin](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and you should be good to go!
+## Project structure
 
-You can open the root folder in one workspace, or `/frontend` and `/backend` in seperate workspaces - both should work fine.
+```
+backend/    Express server (src/index.js)
+frontend/   React app (src/App.jsx, src/todos/components/)
+docs/       Agent and diagram documentation
+```
 
-Check `.nvmrc` to see what node version is required to run the project. Just run `nvm use` if you have `nvm` installed. Later versions of node might work fine as well, but probably not earlier versions.
+## Further reading
 
-For those of you using Prettier (not a requirement), there's an .prettierrc file to ensure no unnecessary changes to the existing code. It should be picked up automatically by Prettier.
+- [ASSIGNMENT.md](ASSIGNMENT.md): the original assignment brief and tasks
+- [docs/agents/](docs/agents/): issue tracker, triage labels, and domain docs
