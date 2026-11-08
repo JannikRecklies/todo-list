@@ -8,7 +8,8 @@ A small todo list app built with React and Express. Users can browse todo lists 
 
 - Browse a set of todo lists in a sidebar card
 - Open a list to edit its todos, add new ones, and delete existing ones
-- Save a list to update it in the client state
+- Create, rename, and delete todo lists
+- Save list changes to SQLite so they survive page refreshes and backend restarts
 
 ## Architecture
 
@@ -16,10 +17,10 @@ A small todo list app built with React and Express. Users can browse todo lists 
 
 The app is split into two parts:
 
-- **Frontend** (`frontend/`): a Create React App single-page app using Material UI. `TodoLists` shows the list overview, and `TodoListForm` edits the selected list.
-- **Backend** (`backend/`): an Express server with CORS and JSON body parsing. It currently exposes only a `GET /` route.
+- **Frontend** (`frontend/`): a Create React App single-page app using Material UI. `TodoLists` ties the screen together using the `useTodoLists` hook (which loads and saves through `api.js`), `TodoListOverview` lists the todo lists, `TodoListForm` edits the selected one, and two dialogs create and delete lists.
+- **Backend** (`backend/`): an Express server with CORS and JSON body parsing. `app.js` sets up Express, `todoListRoutes.js` exposes and validates the CRUD routes under `/api/todo-lists`, `todoListStore.js` reads and writes lists and todos, and `database.js` opens the server-local SQLite file and sets up its tables.
 
-The frontend does not call the backend yet. `TodoLists` loads a fixed set of sample lists, and saving only updates React state, so changes are lost on refresh.
+The frontend's `api.js` client sends HTTP/JSON requests to the backend. Title and todo edits stay local until **Save**; creating or deleting a list sends a request immediately. All visitors share the same stored collection. There is no live synchronization: other browsers load the latest data on refresh.
 
 The diagram source is [docs/diagrams/architecture.html](docs/diagrams/architecture.html).
 
@@ -48,6 +49,11 @@ npm start
 ```
 
 Lint each package with `npm run lint` from its folder.
+
+The backend stores todo lists in SQLite at `backend/data/todo-lists.sqlite` and creates the
+database and its tables automatically on first startup. No separate database server or setup
+command is required. The initial example lists are inserted once for a new database. To store the
+database elsewhere, set `TODO_DATABASE_PATH` before starting the backend.
 
 ## Project structure
 
