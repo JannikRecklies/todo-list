@@ -49,15 +49,6 @@ const createTables = (database) => {
       value TEXT NOT NULL
     );
   `)
-  addCompletedColumnIfMissing(database)
-}
-
-// Databases created before completion existed have a todo table without this column.
-const addCompletedColumnIfMissing = (database) => {
-  const columns = database.prepare('PRAGMA table_info(todo)').all()
-  if (columns.some((column) => column.name === 'completed')) return
-
-  database.exec('ALTER TABLE todo ADD COLUMN completed INTEGER NOT NULL DEFAULT 0 CHECK (completed IN (0, 1))')
 }
 
 // The marker row remembers that the samples were added already, so they
