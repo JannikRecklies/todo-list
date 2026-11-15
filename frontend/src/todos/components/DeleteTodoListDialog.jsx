@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   Alert,
   Button,
@@ -13,6 +13,7 @@ import {
 export const DeleteTodoListDialog = ({ list, onClose, onDelete }) => {
   const [error, setError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const cancelButton = useRef(null)
 
   const close = () => {
     if (isDeleting) return
@@ -35,14 +36,21 @@ export const DeleteTodoListDialog = ({ list, onClose, onDelete }) => {
   }
 
   return (
-    <Dialog open={Boolean(list)} onClose={close} fullWidth maxWidth='xs'>
+    <Dialog
+      open={Boolean(list)}
+      onClose={close}
+      keepMounted
+      fullWidth
+      maxWidth='xs'
+      TransitionProps={{ onEnter: () => cancelButton.current?.focus() }}
+    >
       <DialogTitle>Delete todo list?</DialogTitle>
       <DialogContent>
         {error && <Alert severity='error'>{error}</Alert>}
         <Typography>{list?.title} and all of its todos will be permanently deleted.</Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={close} disabled={isDeleting}>
+        <Button ref={cancelButton} onClick={close} disabled={isDeleting}>
           Cancel
         </Button>
         <Button color='error' onClick={handleDelete} disabled={isDeleting}>

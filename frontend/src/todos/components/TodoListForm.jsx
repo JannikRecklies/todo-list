@@ -2,15 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import {
   Alert,
   TextField,
-  Card,
-  CardContent,
-  CardActions,
+  Box,
   Button,
   Checkbox,
-  Typography,
+  IconButton,
+  Paper,
 } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
+import { Add, CheckCircle, Close, DeleteOutline, RadioButtonUnchecked } from '@mui/icons-material'
 
 const AUTOSAVE_DELAY_MS = 1000
 
@@ -97,65 +95,105 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
   }
 
   return (
-    <Card sx={{ margin: '0 1rem' }}>
-      <CardContent>
-        <Typography component='h2' sx={{ marginBottom: '1rem' }}>
-          Edit Todo List
-        </Typography>
-        {error && <Alert severity='error'>{error}</Alert>}
-        <form style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-          <TextField
-            required
-            label='List title'
-            value={title}
-            onChange={(event) => changeTitle(event.target.value)}
-            sx={{ marginTop: '1rem' }}
-          />
+    <Paper
+      elevation={0}
+      sx={{
+        width: '100%',
+        maxWidth: 820,
+        p: { xs: 2, sm: 3, md: 4 },
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 2,
+      }}
+    >
+      {error && <Alert severity='error' sx={{ mb: 2 }}>{error}</Alert>}
+      <form>
+        <TextField
+          required
+          fullWidth
+          variant='standard'
+          label='List title'
+          value={title}
+          onChange={(event) => changeTitle(event.target.value)}
+          sx={{ mb: 3, '& .MuiInputBase-input': { fontSize: '1.35rem', fontWeight: 650 } }}
+        />
+        <Box>
           {todos.map((todo, index) => (
-            <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
-              <Typography sx={{ margin: '8px' }} variant='h6'>
-                {index + 1}
-              </Typography>
+            <Box
+              key={index}
+              className='todo-row'
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                minHeight: 58,
+                borderBottom: 1,
+                borderColor: 'divider',
+                '& .todo-delete': { opacity: 0.35 },
+                '&:hover .todo-delete, &:focus-within .todo-delete': { opacity: 1 },
+                '@media (hover: none)': { '& .todo-delete': { opacity: 0.7 } },
+              }}
+            >
               <Checkbox
                 checked={todo.completed}
                 onChange={() => toggleTodo(index)}
-                inputProps={{ 'aria-label': `Mark todo ${index + 1} as completed` }}
-              />
-              <TextField
-                sx={{ flexGrow: 1, marginTop: '1rem' }}
-                label='What to do?'
-                value={todo.text}
-                onChange={(event) => changeTodo(index, event.target.value)}
-                inputProps={{
-                  style: { textDecoration: todo.completed ? 'line-through' : 'none' },
+                icon={<RadioButtonUnchecked fontSize='small' />}
+                checkedIcon={<CheckCircle fontSize='small' />}
+                inputProps={{ 'aria-label': `Mark ${todo.text || `todo ${index + 1}`} as completed` }}
+                sx={{
+                  p: 0.75,
+                  color: '#9ca3af',
+                  '&.Mui-checked': { color: '#6b7280' },
                 }}
               />
-              <Button
-                type='button'
-                sx={{ margin: '8px' }}
+              <TextField
+                fullWidth
+                variant='standard'
+                value={todo.text}
+                onChange={(event) => changeTodo(index, event.target.value)}
+                placeholder='What needs to be done?'
+                autoFocus={todo.text === ''}
+                inputProps={{ 'aria-label': `Todo ${index + 1}` }}
+                sx={{
+                  flex: 1,
+                  '& .MuiInput-root:before, & .MuiInput-root:after': { display: 'none' },
+                  '& .MuiInputBase-input': {
+                    py: 1.5,
+                    color: todo.completed ? 'text.secondary' : 'text.primary',
+                    textDecoration: todo.completed ? 'line-through' : 'none',
+                  },
+                }}
+              />
+              <IconButton
+                className='todo-delete'
+                aria-label={`Delete ${todo.text || `todo ${index + 1}`}`}
                 size='small'
-                color='secondary'
                 onClick={() => removeTodo(index)}
+                sx={{
+                  color: 'text.secondary',
+                  transition: 'color 120ms ease, opacity 120ms ease',
+                  '&:hover': { color: 'error.main', bgcolor: 'transparent' },
+                }}
               >
-                <DeleteIcon />
-              </Button>
-            </div>
+                <Close fontSize='small' />
+              </IconButton>
+            </Box>
           ))}
-          <CardActions>
-            <Button type='button' color='primary' onClick={addTodo}>
-              Add Todo <AddIcon />
-            </Button>
-            <Button
-              type='button'
-              color='error'
-              onClick={deleteTodoList}
-              sx={{ marginLeft: 'auto' }}
-            >
-              Delete List <DeleteIcon />
-            </Button>
-          </CardActions>
-        </form>
-      </CardContent>
-    </Card>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+          <Button type='button' startIcon={<Add />} onClick={addTodo}>
+            Add todo
+          </Button>
+          <Button
+            type='button'
+            color='error'
+            startIcon={<DeleteOutline />}
+            onClick={deleteTodoList}
+          >
+            Delete list
+          </Button>
+        </Box>
+      </form>
+    </Paper>
   )
 }
