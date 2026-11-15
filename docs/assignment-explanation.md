@@ -125,7 +125,50 @@ These affect how to work on the project:
 
 ## Additional task 1: autosave
 
-_Not started._
+**Problem:** users had to press Save after every edit, and a forgotten Save lost the change.
+
+**Agreed scope before coding:**
+- The form has no Save button. Edits save on their own.
+- Blank todos and a blank title are never sent to the server.
+- A failed save shows an error and keeps the edits on screen ([ADR 0006](adr/0006-autosave-todo-lists.md)).
+
+### Additional 1.1 Saving trigger
+
+**What:** title and todo edits are sent 1000 ms after the last change. Removing a todo is sent immediately. Creating and deleting lists were already immediate.
+
+**Why:** the pause keeps requests down to one per pause instead of one per keystroke, and keeps half-typed text out of the saved data. Removing a todo is a discrete action, so waiting would add delay without benefit.
+
+**Alternatives:**
+- *Save on every keystroke:* many requests and half-finished data on the server.
+- *Save on blur:* edits are lost if the user never leaves the field before closing the page.
+
+### Additional 1.2 Blank todos
+
+**What:** blank todos and a blank title stay on screen but are left out of the request. A blank todo is never saved, so after a refresh it is gone.
+
+**Why:** an empty todo has no meaning, and the server validation already rejects a blank title.
+
+**Alternatives:**
+- *Remove blank rows when the user leaves them:* surprising while the user is still typing.
+- *Save blank todos:* clutters the list with empty entries.
+
+### Additional 1.3 Failed saves
+
+**What:** a failed save shows a red alert above the form. The alert stays until a later save succeeds. The edits stay on screen, and the next change tries again.
+
+**Why:** the user sees the problem without losing typed text, and the message clears once the server accepts the data.
+
+**Alternatives:**
+- *Retry button:* the form has no Save button, so a retry control would be a second save path.
+- *Toast message:* disappears before the user notices it.
+
+### Additional 1.4 Switching lists
+
+**What:** if the user switches lists, closes the tab, or refreshes while an edit is waiting for its pause, the timer is stopped and that edit is sent immediately. Switching lists uses the unmount cleanup; closing or refreshing uses a `pagehide` listener. The PUT request uses `keepalive` so it can finish while the page unloads.
+
+**Why:** switching lists would otherwise drop the last change, or send it late after the user has already returned to the same list.
+
+**Alternatives:** blocking the switch until the save finishes, which slows navigation for no benefit.
 
 ## Additional task 2: mark a todo as completed
 

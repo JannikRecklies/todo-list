@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Alert,
   TextField,
@@ -11,36 +11,80 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 
+const AUTOSAVE_DELAY_MS = 1000
+
+const normalizeTodoList = (title, todos) => ({
+  title: title.trim(),
+  todos: todos.filter((todo) => todo.trim() !== ''),
+})
+
 export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
   const [title, setTitle] = useState(todoList.title)
   const [todos, setTodos] = useState(todoList.todos)
   const [error, setError] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
+  const saveTimer = useRef(null) // Holds the timer ID for the scheduled save
+  const saveNow = useRef(null) // Holds the function to save the edit immediately if needed
+
+  const save = async (todoListToSave) => {
+    try {
+      await saveTodoList(todoList.id, todoListToSave)
+      setError('')
+    } catch (requestError) {
+      setError(requestError.message)
+    }
+  }
+
+  const scheduleSave = (nextTitle, nextTodos, delay) => {
+    clearTimeout(saveTimer.current)
+    saveNow.current = null
+
+    const todoListToSave = normalizeTodoList(nextTitle, nextTodos)
+    if (!todoListToSave.title) return
+
+    const saveEditNow = () => {
+      clearTimeout(saveTimer.current)
+      saveNow.current = null
+      save(todoListToSave)
+    }
+    saveTimer.current = setTimeout(saveEditNow, delay)
+    saveNow.current = saveEditNow
+  }
+
+  // Switching lists unmounts the form: stop the timer and save the waiting edit now.
+  useEffect(() => {
+    return () => {
+      if (saveNow.current) saveNow.current()
+    }
+  }, [])
+
+  // Closing or refreshing the tab does not unmount the form, so save the waiting edit on pagehide.
+  useEffect(() => {
+    const saveBeforeClose = () => {
+      if (saveNow.current) saveNow.current()
+    }
+    window.addEventListener('pagehide', saveBeforeClose)
+    return () => window.removeEventListener('pagehide', saveBeforeClose)
+  }, [])
+
+  const changeTitle = (newTitle) => {
+    setTitle(newTitle)
+    scheduleSave(newTitle, todos, AUTOSAVE_DELAY_MS)
+  }
 
   const changeTodo = (index, text) => {
-    setTodos(todos.map((todo, i) => (i === index ? text : todo)))
+    const nextTodos = todos.map((todo, i) => (i === index ? text : todo))
+    setTodos(nextTodos)
+    scheduleSave(title, nextTodos, AUTOSAVE_DELAY_MS)
   }
 
   const removeTodo = (index) => {
-    setTodos(todos.filter((todo, i) => i !== index))
+    const nextTodos = todos.filter((todo, i) => i !== index)
+    setTodos(nextTodos)
+    scheduleSave(title, nextTodos, 0)
   }
 
   const addTodo = () => {
     setTodos([...todos, ''])
-  }
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setIsSaving(true)
-    setError('')
-
-    try {
-      await saveTodoList(todoList.id, { title: title.trim(), todos })
-    } catch (requestError) {
-      setError(requestError.message)
-    } finally {
-      setIsSaving(false)
-    }
   }
 
   return (
@@ -50,15 +94,12 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
           Edit Todo List
         </Typography>
         {error && <Alert severity='error'>{error}</Alert>}
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
-        >
+        <form style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
           <TextField
             required
             label='List title'
             value={title}
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) => changeTitle(event.target.value)}
             sx={{ marginTop: '1rem' }}
           />
           {todos.map((name, index) => (
@@ -71,14 +112,12 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
                 label='What to do?'
                 value={name}
                 onChange={(event) => changeTodo(index, event.target.value)}
-                disabled={isSaving}
               />
               <Button
                 type='button'
                 sx={{ margin: '8px' }}
                 size='small'
                 color='secondary'
-                disabled={isSaving}
                 onClick={() => removeTodo(index)}
               >
                 <DeleteIcon />
@@ -86,16 +125,12 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
             </div>
           ))}
           <CardActions>
-            <Button type='button' color='primary' disabled={isSaving} onClick={addTodo}>
+            <Button type='button' color='primary' onClick={addTodo}>
               Add Todo <AddIcon />
-            </Button>
-            <Button type='submit' variant='contained' color='primary' disabled={isSaving}>
-              Save
             </Button>
             <Button
               type='button'
               color='error'
-              disabled={isSaving}
               onClick={deleteTodoList}
               sx={{ marginLeft: 'auto' }}
             >
