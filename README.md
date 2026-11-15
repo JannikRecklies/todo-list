@@ -4,6 +4,8 @@ A small todo list app built with React and Express. Users can browse todo lists 
 
 > This project started as a take-home assignment. The original brief is kept in [ASSIGNMENT.md](docs/assignment/ASSIGNMENT.md). Which and how the given tasks are solved is explained in [ASSIGNMENT_SOLUTION.md](docs/assignment/ASSIGNMENT_SOLUTION.md)
 
+![Todo list app screenshot](docs/images/app-screenshot.png)
+
 ## Features
 
 - Browse todo lists in a sidebar (a drawer on narrow screens); the selected list is highlighted in blue
