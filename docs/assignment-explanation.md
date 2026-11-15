@@ -1,6 +1,6 @@
-# Implementation decisions
+# Assignment explanation: persisting todo lists
 
-This document explains what we built for issue #2 and why we chose each approach over the alternatives. It is a log of reasoning, not a specification. For binding architectural decisions see [`docs/adr/`](adr/).
+This document explains what we built for issue #2 and why we chose each approach over the alternatives. It is a log of reasoning, not a specification. For binding architectural decisions see [`docs/adr/`](adr/). The [summary](#summary) at the end lists every task in one place.
 
 ## Main task: Persist todo lists on the server
 
@@ -128,3 +128,26 @@ These are not design decisions, but they affect how to work on the project:
 - **Global npm cache corruption:** `npm ci` failed with ENOENT. Running `npm cache clean --force` fixes it. A temporary cache also works (`npm ci --cache /tmp/...`).
 - **Editor auto-installer changed `package.json`:** the TypeScript auto-installer ran `npm install` in `frontend/`, which pinned `react-scripts` to `^0.0.0` and pruned `node_modules`. Restore with `git checkout -- package.json package-lock.json`, then `npm ci`. Disabling `typescript.disableAutomaticTypeAcquisition` in VS Code prevents this.
 - **Node version:** `.nvmrc` pins Node 20, but a development machine on Node 16 was used for some commands. Use Node 20 to match the project.
+
+## Summary
+
+| # | Task | Decision | Main reason | Where |
+|---|------|----------|-------------|-------|
+| Main | Persist todo lists (#2) | One shared collection, staged edits until Save, refresh-only sync | Keep scope small; no accounts | [ADR 0001](adr/0001-shared-todo-lists.md) |
+| 1 | Storage | SQLite via `better-sqlite3` (pinned `^11.10.0`) | Single file, no server, real transactions | [ADR 0002](adr/0002-sqlite-for-storage.md) |
+| 2 | Schema | Singular tables, cascade delete, foreign keys on | Mirrors the domain; no orphaned todos | [ADR 0003](adr/0003-todo-schema.md) |
+| 3 | Seeding | One-time seed guarded by a marker row | Deleted samples must not return | `backend/src/database.js` |
+| 4 | Saving | Replace all todos in one transaction | Frontend already sends the full list | `backend/src/todoListStore.js` |
+| 5 | Backend split | `app.js`, `todoListRoutes.js`, `todoListStore.js`, `database.js`, `index.js` | One job per file; testable `createApp` | `backend/src/` |
+| 6 | CORS | Stays in `app.js` | Frontend runs on another port | `backend/src/app.js` |
+| 7 | Ports | `PORT` and `REACT_APP_API_URL` env vars | Deployments assign ports | `index.js`, `api.js` |
+| 8 | Validation | Server checks titles and todos; `400` / `404` | Browser checks can be bypassed | `backend/src/todoListRoutes.js` |
+| 9 | Frontend data flow | `api.js` is the only HTTP layer; create and delete immediate, edits on Save | Half-typed text never reaches the server | `frontend/src/todos/` |
+| 10 | Frontend split | `useTodoLists` hook plus overview and dialog components | Each piece owns its own state | `frontend/src/todos/components/` |
+| 11 | Diagram | One architecture diagram, redesigned | Avoid a duplicate that goes stale | `docs/diagrams/architecture.html` |
+| 12 | Docs | Glossary, ADRs, schema diagram, README | Fixed names; decisions next to pictures | `GLOSSARY.md`, `docs/` |
+| 13 | Dependencies | Non-breaking audit fixes only | Breaking changes stay deliberate | `backend/package.json`, `frontend/package-lock.json` |
+| 14 | Environment | Documented npm cache, editor installer, Node version issues | Save future debugging time | This file |
+
+**Open items:** plural-named databases are not migrated; the frontend has 32 remaining vulnerabilities (a Vite migration would address most of them); there is no authentication.
+
