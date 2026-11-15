@@ -164,7 +164,7 @@ These affect how to work on the project:
 
 ### Additional 1.4 Switching lists
 
-**What:** if the user switches lists while an edit is waiting for its pause, the timer is stopped and that edit is sent immediately when the form unmounts.
+**What:** if the user switches lists, closes the tab, or refreshes while an edit is waiting for its pause, the timer is stopped and that edit is sent immediately. Switching lists uses the unmount cleanup; closing or refreshing uses a `pagehide` listener. The PUT request uses `keepalive` so it can finish while the page unloads.
 
 **Why:** switching lists would otherwise drop the last change, or send it late after the user has already returned to the same list.
 

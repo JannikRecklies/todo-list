@@ -57,6 +57,15 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
     }
   }, [])
 
+  // Closing or refreshing the tab does not unmount the form, so save the waiting edit on pagehide.
+  useEffect(() => {
+    const saveBeforeClose = () => {
+      if (saveNow.current) saveNow.current()
+    }
+    window.addEventListener('pagehide', saveBeforeClose)
+    return () => window.removeEventListener('pagehide', saveBeforeClose)
+  }, [])
+
   const changeTitle = (newTitle) => {
     setTitle(newTitle)
     scheduleSave(newTitle, todos, AUTOSAVE_DELAY_MS)

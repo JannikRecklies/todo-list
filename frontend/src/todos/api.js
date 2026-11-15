@@ -25,10 +25,12 @@ export const createTodoList = (title) =>
     body: JSON.stringify({ title }),
   })
 
+// keepalive lets the browser finish the save even when the page is closing.
 export const saveTodoList = (id, changes) =>
   request(`/api/todo-lists/${encodeURIComponent(id)}`, {
     method: 'PUT',
     body: JSON.stringify(changes),
+    keepalive: true,
   })
 
 export const deleteTodoList = (id) =>
