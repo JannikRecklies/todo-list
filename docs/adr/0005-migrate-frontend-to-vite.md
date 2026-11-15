@@ -6,8 +6,6 @@
 
 - **Keep react-scripts:** no changes, but the audit findings stay because they come from its build tree.
 - **Next.js:** a full framework with server rendering and routing, more than this app needs.
-- **Parcel or Rspack:** maintained bundlers, but less common, so reviewers are less likely to know them.
-- **Eject or a hand-written webpack config:** we would own and maintain the build config ourselves.
 - **Vite (chosen):** maintained, small config, and close to our existing commands.
 
 ## Consequences
