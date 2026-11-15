@@ -1,6 +1,6 @@
 # Autosave todo list edits
 
-Issue #3 requires that edits are saved without a Save button. Title and todo edits are therefore sent 1000 ms after the last change, and removing a todo is sent immediately. A waiting edit is sent at once when the user switches lists or closes or refreshes the tab. This supersedes the on-demand Save decision in the original design.
+Edits need to be saved without a Save button. Title and todo edits are therefore sent 1000 ms after the last change, and removing a todo is sent immediately. A waiting edit is sent immediately when the user switches lists or closes or refreshes the tab. This supersedes the on-demand Save decision in the original design.
 
 ## Considered options
 
@@ -13,4 +13,4 @@ Issue #3 requires that edits are saved without a Save button. Title and todo edi
 
 - Closing or refreshing the tab depends on `pagehide` and `keepalive`. Browsers treat `keepalive` as best-effort, so the final edit may still be lost in rare cases.
 - A failed save after the form unmounts is not shown, because the form is gone.
-- Every pause writes the whole list, so autosave makes more writes than a single Save.
+- Every pause writes the whole list, so autosave makes more writes than a single Save. Saving only what changed is tracked in [#15](https://github.com/JannikRecklies/todo-list/issues/15). To be improved in the future.
