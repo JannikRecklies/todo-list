@@ -116,12 +116,15 @@ This document explains how we solved each task in [ASSIGNMENT.md](../ASSIGNMENT.
 
 **Alternatives:** `npm audit fix --force`, which can introduce breaking changes, and migrating to Vite, which would remove most remaining findings but is a larger change we have not made.
 
+**Kept versions:** Node 20, `better-sqlite3` 11, `react-scripts` 5, Express 4.22, and ESLint 8 stay as they are. The assignment pins Node 20, and reviewers run it that way. The full list, the options we skipped, and what leaving them means are in [ADR 0004](adr/0004-keep-pinned-toolchain-versions.md).
+
 ### Main 12. Environment problems
 
 These affect how to work on the project:
 - **npm cache corruption** caused `npm ci` to fail with ENOENT. Fix: `npm cache clean --force`, or use a temporary cache with `--cache`.
 - **Editor auto-installer** ran `npm install` in `frontend/`, which pinned `react-scripts` to `^0.0.0`. Fix: `git checkout -- package.json package-lock.json`, then `npm ci`. Disable `typescript.disableAutomaticTypeAcquisition` to prevent it.
-- **Node version:** use Node 20, as pinned in `.nvmrc`.
+- **Node version:** use Node 20, as pinned in `.nvmrc`. On the development machine, the default Node was v16.20.2, which does not match the pin. Run `nvm use` before `npm ci` or `npm start`, or the install and start can fail.
+- **Node 20 is end-of-life** (April 2026), so it gets no security fixes. We keep it because the assignment pins it; see [ADR 0004](adr/0004-keep-pinned-toolchain-versions.md).
 
 ## Additional task 1: autosave
 
@@ -154,7 +157,7 @@ _Not started._
 | Main 8 Frontend | Small components and a hook |
 | Main 9 Diagram | One architecture diagram |
 | Main 10 Docs | Glossary, ADRs, README |
-| Main 11 Dependencies | Non-breaking fixes only |
+| Main 11 Dependencies | Non-breaking fixes only; versions kept as pinned by the assignment (ADR 0004) |
 | Main 12 Environment | Known npm, editor, and Node pitfalls |
 
 **Open items:** no migration for plural-named databases; 32 frontend vulnerabilities remain; no authentication.
