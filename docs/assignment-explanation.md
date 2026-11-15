@@ -1,153 +1,144 @@
 # Assignment explanation: persisting todo lists
 
-This document explains what we built for issue #2 and why we chose each approach over the alternatives. It is a log of reasoning, not a specification. For binding architectural decisions see [`docs/adr/`](adr/). The [summary](#summary) at the end lists every task in one place.
+This document explains what we did for [issue #2](https://github.com/JannikRecklies/todo-list/issues/2), why, and which alternatives we rejected. Each task has the same structure: **What**, **Why**, and **Alternatives**. For binding decisions, see the [ADRs](adr/).
 
-## Main task: Persist todo lists on the server
+## Main task: persist todo lists on the server
 
-[Issue #2](https://github.com/JannikRecklies/todo-list/issues/2): todo lists lived only in React state, so every refresh reset them. The goal is that lists and todos survive a page refresh and a backend restart.
+**Problem:** lists lived only in React state, so a refresh reset them.
 
-Decisions agreed before implementation:
+**Agreed scope before coding:**
+- One shared collection for everyone. No accounts ([ADR 0001](adr/0001-shared-todo-lists.md)).
+- Seed the two existing examples once.
+- Create, rename, and delete lists. Deleting a list also deletes its todos, after confirmation.
+- Todos stay plain text.
+- Title and todo edits are sent on **Save**, not while typing.
+- No live sync. Other browsers see changes on refresh; the later save wins.
 
-- **One shared collection.** Everyone who opens the app sees and edits the same lists. No accounts, no per-user data. See [ADR 0001](adr/0001-shared-todo-lists.md).
-- **Seed the two existing examples once,** so a fresh database isn't empty.
-- **Create, rename, and delete lists.** Deleting a list also deletes its todos, after a confirmation dialog.
-- **Todos stay plain text.** No due dates, priorities, or completion state.
-- **Title and todo edits are staged until Save.** Nothing is sent while typing.
-- **No live sync.** Other browsers see changes on refresh. When two people save, the later save wins.
+## 1. Storage: SQLite
 
-## Tasks
+**What:** lists and todos are stored in a SQLite file (`backend/data/todo-lists.sqlite`) through `better-sqlite3`, pinned to `^11.10.0`. Version 13 needs Node 22, and the project pins Node 20.
 
-### 1. Storing data in SQLite
+**Why:** SQLite is one file with no separate server, and it supports foreign keys and transactions. This suits a small app on one machine ([ADR 0002](adr/0002-sqlite-for-storage.md)).
 
-**What:** lists and todos are stored in a SQLite file on the backend (`backend/data/todo-lists.sqlite` by default). The `better-sqlite3` driver is used.
+**Alternatives:**
+- *JSON file:* simpler, but every save rewrites the whole file, with no constraints or transactions.
+- *PostgreSQL:* more capable, but needs a server for two example lists.
 
-**Why:** SQLite is a single file with no separate server to install or run, and it supports real relational tables, foreign keys, and transactions. This fits a small app run on one machine. See [ADR 0002](adr/0002-sqlite-for-storage.md).
+## 2. Schema
 
-**Alternatives we rejected:**
-- *A JSON file:* simpler, but every save rewrites the whole file, and there are no transactions or constraints.
-- *PostgreSQL:* more capable, but adds a server to install and configure for two example lists.
+**What:** three tables. `todo_list` holds lists, `todo` holds todos with a `list_id` foreign key, and `app_metadata` holds the seed marker. Deleting a list cascades to its todos. Foreign keys are switched on explicitly, because SQLite leaves them off by default. Table names are singular, as taught in UML ([ADR 0003](adr/0003-todo-schema.md)).
 
-**Driver version:** we pinned `better-sqlite3` to `^11.10.0`. Version 13 requires Node 22, while the project's `.nvmrc` pins Node 20.
+**Why:** the schema matches the domain (one list has many todos), and cascade delete prevents orphaned todos.
 
-### 2. Table design and singular names
+**Alternatives:**
+- *Plural names (`todo_lists`, `todos`):* common in SQL, but the team learned singular names in UML.
+- *Application-level delete:* the code would have to remove todos first; the database does this more reliably.
 
-**What:** three tables: `todo_list`, `todo`, and `app_metadata`. A todo belongs to a list through `list_id`, and deleting a list cascades to its todos. Table names are singular, following UML convention.
+**Known gap:** databases created with the old plural names are not migrated. Delete `backend/data/todo-lists.sqlite` once locally.
 
-**Why:** the schema mirrors the domain: one list has many todos. Cascade delete keeps the database from holding orphaned todos. Foreign keys are switched on explicitly, because SQLite leaves them off by default. Schema details are in [ADR 0003](adr/0003-todo-schema.md).
+## 3. Seeding the example lists
 
-**Known gap:** databases created with the earlier plural table names (`todo_lists`, `todos`) are not migrated. Those rows stay in the file but are never read. Locally, delete `backend/data/todo-lists.sqlite` once.
+**What:** the two samples are inserted only when the database has no lists and the `sample_lists_seeded` marker is missing. The marker is then written.
 
-### 3. Seeding the example lists once
+**Why:** checking only "is the table empty?" would bring the samples back after every list is deleted. The marker records that seeding already happened.
 
-**What:** the two sample lists are inserted only if the database has no lists and the `sample_lists_seeded` marker is missing. The marker is then written.
+**Alternatives:** a seed script run by hand, which is easy to forget, or seeding on every startup, which resurrects deleted lists.
 
-**Why:** checking only "is the table empty?" would bring the samples back after the user deletes every list. The marker records that seeding already happened, so an empty database stays empty.
+## 4. Saving a list
 
-### 4. Saving todos as a whole list
+**What:** saving updates the title and replaces all todos in one transaction. The array index becomes each todo's position.
 
-**What:** saving a list updates its title and replaces all of its todos in one transaction. The array position becomes the todo's position.
+**Why:** the frontend already holds the full list on Save, so sending all of it is simpler. The transaction makes the save all-or-nothing.
 
-**Why:** the frontend already holds the complete list when Save is pressed, so sending the whole list is simpler than tracking individual row changes. The transaction makes the save all-or-nothing.
+**Alternatives:** diffing todos and sending only changes. It adds code and failure cases for no visible benefit at this size.
 
-**Alternative rejected:** diffing todos and sending only changes. More code and more failure cases for no visible benefit at this size.
-
-### 5. Splitting the backend into four files
-
-**What:**
-- `app.js`: Express setup (CORS, JSON parsing, mounting the routes).
-- `todoListRoutes.js`: HTTP handling, request checks, and status codes.
-- `todoListStore.js`: reads and writes lists and todos.
-- `database.js`: opens the file, creates the tables, and seeds the samples.
-- `index.js`: starts the real server with the real database.
-
-**Why:** each file has one job. `createApp` takes the store as a parameter, so the API tests can run against a temporary database without starting a server on the real port. Routes check requests, and the store only talks to SQLite, so either can change without touching the other.
-
-**Earlier versions** had all of this in one large store function. It was hard to read, and we refactored it twice before settling on this structure.
-
-### 6. CORS stays in `app.js`
-
-**What:** `cors()` is applied in `app.js`.
-
-**Why:** the frontend runs on a different port from the backend, so the browser blocks its requests without CORS headers. Keeping it in `app.js` means tests and the running server get the same behavior.
-
-### 7. Port from an environment variable
-
-**What:** the backend listens on `process.env.PORT`, falling back to `3001`. The frontend reads `REACT_APP_API_URL`, falling back to `http://localhost:3001`.
-
-**Why:** deployments often assign a port, so it cannot be hard-coded. To change the port, set `PORT=4000 npm start` on the backend and `REACT_APP_API_URL` on the frontend to match.
-
-### 8. Validating requests on the backend
-
-**What:** titles must be non-blank strings, and todos must be an array of strings. Invalid requests get `400`. Unknown list IDs get `404`.
-
-**Why:** the browser's checks can be bypassed, so the server must enforce the rules too. The database also has a `CHECK` constraint on titles as a last line of defence.
-
-### 9. Frontend: the browser only edits and sends
+## 5. Backend structure
 
 **What:**
-- `api.js` is the only file that makes HTTP requests.
-- `useTodoLists.js` loads and keeps the lists and the selected list.
-- Component callbacks (such as "save this list") are plain JavaScript functions. They are not HTTP requests.
+- `index.js` starts the real server with the real database.
+- `app.js` sets up Express (CORS, JSON parsing, routes).
+- `todoListRoutes.js` handles HTTP, validation, and status codes.
+- `todoListStore.js` reads and writes lists and todos.
+- `database.js` opens the file, creates tables, and seeds samples.
 
-**Why:** keeping all `fetch` calls in one file means a URL or header change happens in one place.
+**Why:** each file has one job. `createApp` takes the store as a parameter, so API tests can use a temporary database without the real port.
 
-**Behavior we chose:** create and delete are sent immediately because they change the list structure. Title and todo edits are sent on Save, so half-typed text never reaches the server.
+**Alternatives:** one large store function, which we wrote first and then split because it was hard to follow.
 
-### 10. Splitting the frontend screen
+## 6. Validation, CORS, and ports
 
-**What:** `TodoLists.jsx` now only wires things together. It uses `useTodoLists`, `TodoListOverview`, `TodoListForm`, `CreateTodoListDialog`, and `DeleteTodoListDialog`.
+**What:**
+- Titles must be non-blank strings and todos an array of strings. Invalid input gets `400`; unknown IDs get `404`.
+- `cors()` is in `app.js`, because the frontend runs on a different port.
+- The backend uses `PORT` (default `3001`); the frontend uses `REACT_APP_API_URL`.
 
-**Why:** each piece owns its own state. The create and delete dialogs track their own loading and error messages.
+**Why:** the server must enforce rules because browser checks can be bypassed. Ports come from the environment because deployments assign them.
 
-**Behavior change:** create and delete errors now show inside the dialog. Loading errors still show at the top of the page.
+**Alternatives:** trusting the frontend for validation, and hard-coding the port.
 
-### 11. Architecture diagram
+## 7. Frontend data flow
 
-**What:** there is one architecture diagram, `docs/diagrams/architecture.html`, exported to `architecture.svg` for the README.
+**What:** `api.js` is the only file that makes HTTP requests. `useTodoLists` loads and holds the lists. Create and delete are sent immediately; title and todo edits are sent on Save.
 
-**Why:** an earlier separate "persistence architecture" diagram duplicated this one and went out of date. Keeping one source avoids that. The redesigned diagram shows the browser and the backend as separate zones, one left-to-right request flow, and SQLite as the single highlighted element.
+**Why:** all `fetch` calls live in one place. Immediate create and delete reflect structural changes, and Save keeps half-typed text off the server.
 
-### 12. Documentation
+**Alternatives:** autosave on every keystroke (many requests, half-finished data) and calling `fetch` from components (URLs spread across the UI).
 
-**What:** the glossary (`GLOSSARY.md`), ADRs 0001–0003, the schema diagram, and the README were added or updated.
+## 8. Frontend structure
 
-**Why:** the glossary fixes the names used in code and conversation, so "list" and "todo" mean the same thing everywhere. ADR 0003 embeds the schema diagram so the decisions and the picture stay together.
+**What:** `TodoLists.jsx` wires the screen together, with `TodoListOverview`, `TodoListForm`, `CreateTodoListDialog`, and `DeleteTodoListDialog`. The dialogs track their own loading and error state.
 
-### 13. Dependency updates
+**Why:** each piece owns its state. Create and delete errors now show in their dialog; load errors still show at the top of the page.
 
-**Backend:** `npm audit fix` moved Express from 4.19.2 to 4.22.3, with no breaking changes. Audit now reports 0 vulnerabilities.
+**Alternatives:** keeping one large component with all state, which was hard to follow.
 
-**Frontend:** `npm audit fix` reduced the findings from 74 to 32, and the 4 critical ones are gone. The remaining 32 come from `react-scripts` 5 and need a breaking migration. We considered switching to Vite, which would remove most of them, but left it as a separate decision.
+## 9. Architecture diagram
 
-**Why not force the fix:** `npm audit fix --force` can introduce breaking changes, and we want each one to be a deliberate choice.
+**What:** one diagram, `docs/diagrams/architecture.html`, exported to `architecture.svg` for the README. It shows the browser and backend as separate zones, one left-to-right request flow, and SQLite as the single highlighted element.
 
-### 14. Environment problems we hit
+**Why:** an earlier "persistence architecture" diagram duplicated this one and went stale. One source avoids that.
 
-These are not design decisions, but they affect how to work on the project:
+**Alternatives:** a second diagram for persistence, which we removed.
 
-- **Global npm cache corruption:** `npm ci` failed with ENOENT. Running `npm cache clean --force` fixes it. A temporary cache also works (`npm ci --cache /tmp/...`).
-- **Editor auto-installer changed `package.json`:** the TypeScript auto-installer ran `npm install` in `frontend/`, which pinned `react-scripts` to `^0.0.0` and pruned `node_modules`. Restore with `git checkout -- package.json package-lock.json`, then `npm ci`. Disabling `typescript.disableAutomaticTypeAcquisition` in VS Code prevents this.
-- **Node version:** `.nvmrc` pins Node 20, but a development machine on Node 16 was used for some commands. Use Node 20 to match the project.
+## 10. Documentation
+
+**What:** `GLOSSARY.md` defines "todo list" and "todo", ADRs 0001 to 0003 record the key decisions, the schema diagram is embedded in ADR 0003, and the README was updated.
+
+**Why:** shared names prevent confusion in code and discussion, and decisions sit next to their pictures.
+
+## 11. Dependencies
+
+**What:**
+- Backend: `npm audit fix` moved Express from 4.19.2 to 4.22.3 with no breaking changes. The backend now reports 0 vulnerabilities.
+- Frontend: non-breaking fixes reduced findings from 74 to 32 and removed all critical ones. The rest come from `react-scripts` 5.
+
+**Why:** we only applied fixes that don't change behavior. Each breaking change should be a deliberate choice.
+
+**Alternatives:** `npm audit fix --force`, which can introduce breaking changes, and migrating to Vite, which would remove most remaining findings but is a larger change we have not made.
+
+## 12. Environment problems
+
+These affect how to work on the project:
+- **npm cache corruption** caused `npm ci` to fail with ENOENT. Fix: `npm cache clean --force`, or use a temporary cache with `--cache`.
+- **Editor auto-installer** ran `npm install` in `frontend/`, which pinned `react-scripts` to `^0.0.0`. Fix: `git checkout -- package.json package-lock.json`, then `npm ci`. Disable `typescript.disableAutomaticTypeAcquisition` to prevent it.
+- **Node version:** use Node 20, as pinned in `.nvmrc`.
 
 ## Summary
 
-| # | Task | Decision | Main reason | Where |
-|---|------|----------|-------------|-------|
-| Main | Persist todo lists (#2) | One shared collection, staged edits until Save, refresh-only sync | Keep scope small; no accounts | [ADR 0001](adr/0001-shared-todo-lists.md) |
-| 1 | Storage | SQLite via `better-sqlite3` (pinned `^11.10.0`) | Single file, no server, real transactions | [ADR 0002](adr/0002-sqlite-for-storage.md) |
-| 2 | Schema | Singular tables, cascade delete, foreign keys on | Mirrors the domain; no orphaned todos | [ADR 0003](adr/0003-todo-schema.md) |
-| 3 | Seeding | One-time seed guarded by a marker row | Deleted samples must not return | `backend/src/database.js` |
-| 4 | Saving | Replace all todos in one transaction | Frontend already sends the full list | `backend/src/todoListStore.js` |
-| 5 | Backend split | `app.js`, `todoListRoutes.js`, `todoListStore.js`, `database.js`, `index.js` | One job per file; testable `createApp` | `backend/src/` |
-| 6 | CORS | Stays in `app.js` | Frontend runs on another port | `backend/src/app.js` |
-| 7 | Ports | `PORT` and `REACT_APP_API_URL` env vars | Deployments assign ports | `index.js`, `api.js` |
-| 8 | Validation | Server checks titles and todos; `400` / `404` | Browser checks can be bypassed | `backend/src/todoListRoutes.js` |
-| 9 | Frontend data flow | `api.js` is the only HTTP layer; create and delete immediate, edits on Save | Half-typed text never reaches the server | `frontend/src/todos/` |
-| 10 | Frontend split | `useTodoLists` hook plus overview and dialog components | Each piece owns its own state | `frontend/src/todos/components/` |
-| 11 | Diagram | One architecture diagram, redesigned | Avoid a duplicate that goes stale | `docs/diagrams/architecture.html` |
-| 12 | Docs | Glossary, ADRs, schema diagram, README | Fixed names; decisions next to pictures | `GLOSSARY.md`, `docs/` |
-| 13 | Dependencies | Non-breaking audit fixes only | Breaking changes stay deliberate | `backend/package.json`, `frontend/package-lock.json` |
-| 14 | Environment | Documented npm cache, editor installer, Node version issues | Save future debugging time | This file |
+| Task | Decision |
+|---|---|
+| Main | One shared collection; edits saved on demand; refresh-only sync |
+| 1 Storage | SQLite via `better-sqlite3` |
+| 2 Schema | Singular tables; cascade delete |
+| 3 Seeding | Seed once, guarded by a marker |
+| 4 Saving | Replace all todos in one transaction |
+| 5 Backend | Split into five files by job |
+| 6 Validation | Server-side checks; CORS in `app.js`; env-based ports |
+| 7 Frontend data | One HTTP module; Save for edits, immediate create and delete |
+| 8 Frontend | Small components and a hook |
+| 9 Diagram | One architecture diagram |
+| 10 Docs | Glossary, ADRs, README |
+| 11 Dependencies | Non-breaking fixes only |
+| 12 Environment | Known npm, editor, and Node pitfalls |
 
-**Open items:** plural-named databases are not migrated; the frontend has 32 remaining vulnerabilities (a Vite migration would address most of them); there is no authentication.
-
+**Open items:** no migration for plural-named databases; 32 frontend vulnerabilities remain; no authentication.
