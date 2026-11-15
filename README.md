@@ -2,7 +2,7 @@
 
 A small todo list app built with React and Express. Users can browse todo lists and add, edit, and delete the todos within them in the browser.
 
-> This project started as a take-home assignment. The original brief is kept in [ASSIGNMENT.md](ASSIGNMENT.md).
+> This project started as a take-home assignment. The original brief is kept in [ASSIGNMENT.md](docs/assignment/ASSIGNMENT.md). Which and how the given tasks are solved is explained in [ASSIGNMENT_SOLUTION.md](docs/assignment/ASSIGNMENT_SOLUTION.md)
 
 ## Features
 
@@ -66,5 +66,5 @@ docs/       Agent and diagram documentation
 
 ## Further reading
 
-- [ASSIGNMENT.md](ASSIGNMENT.md): the original assignment brief and tasks
+- [ASSIGNMENT.md](docs/assignment/ASSIGNMENT.md): the original assignment brief and tasks
 - [docs/agents/](docs/agents/): issue tracker, triage labels, and domain docs
