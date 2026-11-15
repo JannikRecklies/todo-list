@@ -40,6 +40,7 @@ const createTables = (database) => {
       list_id TEXT NOT NULL REFERENCES todo_list(id) ON DELETE CASCADE,
       position INTEGER NOT NULL,
       text TEXT NOT NULL,
+      completed INTEGER NOT NULL DEFAULT 0 CHECK (completed IN (0, 1)),
       PRIMARY KEY (list_id, position)
     );
 
@@ -48,6 +49,15 @@ const createTables = (database) => {
       value TEXT NOT NULL
     );
   `)
+  addCompletedColumnIfMissing(database)
+}
+
+// Databases created before completion existed have a todo table without this column.
+const addCompletedColumnIfMissing = (database) => {
+  const columns = database.prepare('PRAGMA table_info(todo)').all()
+  if (columns.some((column) => column.name === 'completed')) return
+
+  database.exec('ALTER TABLE todo ADD COLUMN completed INTEGER NOT NULL DEFAULT 0 CHECK (completed IN (0, 1))')
 }
 
 // The marker row remembers that the samples were added already, so they

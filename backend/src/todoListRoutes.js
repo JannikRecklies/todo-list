@@ -2,8 +2,13 @@ import { Router } from 'express'
 
 const isNonBlankString = (value) => typeof value === 'string' && value.trim() !== ''
 
-const isArrayOfStrings = (value) =>
-  Array.isArray(value) && value.every((item) => typeof item === 'string')
+const isTodo = (value) =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof value.text === 'string' &&
+  typeof value.completed === 'boolean'
+
+const isArrayOfTodos = (value) => Array.isArray(value) && value.every(isTodo)
 
 // Routes for /api/todo-lists. They check the request, call the store, and pick the HTTP status.
 export const createTodoListRoutes = (todoListStore) => {
@@ -25,8 +30,8 @@ export const createTodoListRoutes = (todoListStore) => {
 
   router.put('/:id', (req, res) => {
     const { title, todos } = req.body ?? {}
-    if (!isNonBlankString(title) || !isArrayOfStrings(todos)) {
-      return res.status(400).json({ error: 'A title and an array of todo text are required.' })
+    if (!isNonBlankString(title) || !isArrayOfTodos(todos)) {
+      return res.status(400).json({ error: 'A title and an array of todos with text and completed are required.' })
     }
 
     const updatedList = todoListStore.update(req.params.id, title.trim(), todos)

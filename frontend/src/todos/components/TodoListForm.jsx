@@ -6,6 +6,7 @@ import {
   CardContent,
   CardActions,
   Button,
+  Checkbox,
   Typography,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -15,7 +16,7 @@ const AUTOSAVE_DELAY_MS = 1000
 
 const normalizeTodoList = (title, todos) => ({
   title: title.trim(),
-  todos: todos.filter((todo) => todo.trim() !== ''),
+  todos: todos.filter((todo) => todo.text.trim() !== ''),
 })
 
 export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
@@ -72,9 +73,17 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
   }
 
   const changeTodo = (index, text) => {
-    const nextTodos = todos.map((todo, i) => (i === index ? text : todo))
+    const nextTodos = todos.map((todo, i) => (i === index ? { ...todo, text } : todo))
     setTodos(nextTodos)
     scheduleSave(title, nextTodos, AUTOSAVE_DELAY_MS)
+  }
+
+  const toggleTodo = (index) => {
+    const nextTodos = todos.map((todo, i) =>
+      i === index ? { ...todo, completed: !todo.completed } : todo
+    )
+    setTodos(nextTodos)
+    scheduleSave(title, nextTodos, 0)
   }
 
   const removeTodo = (index) => {
@@ -84,7 +93,7 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
   }
 
   const addTodo = () => {
-    setTodos([...todos, ''])
+    setTodos([...todos, { text: '', completed: false }])
   }
 
   return (
@@ -102,16 +111,24 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
             onChange={(event) => changeTitle(event.target.value)}
             sx={{ marginTop: '1rem' }}
           />
-          {todos.map((name, index) => (
+          {todos.map((todo, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
               <Typography sx={{ margin: '8px' }} variant='h6'>
                 {index + 1}
               </Typography>
+              <Checkbox
+                checked={todo.completed}
+                onChange={() => toggleTodo(index)}
+                inputProps={{ 'aria-label': `Mark todo ${index + 1} as completed` }}
+              />
               <TextField
                 sx={{ flexGrow: 1, marginTop: '1rem' }}
                 label='What to do?'
-                value={name}
+                value={todo.text}
                 onChange={(event) => changeTodo(index, event.target.value)}
+                inputProps={{
+                  style: { textDecoration: todo.completed ? 'line-through' : 'none' },
+                }}
               />
               <Button
                 type='button'
