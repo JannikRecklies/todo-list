@@ -13,4 +13,4 @@ We keep `react-scripts` for now. The assignment's documented setup depends on it
 ## Consequences
 
 - The 32 audit findings remain and are accepted as build-time risk for now.
-- A future Vite migration would include: adding `@vitejs/plugin-react` and `vite.config.js` with `server.open: true`; moving `index.html` to the frontend root with a module script; renaming `REACT_APP_API_URL` to `VITE_API_URL`; replacing the ESLint config; and changing the output directory to `dist/`. Vite 7 requires Node 20.19 or newer, so `.nvmrc` would need updating too.
+- A future Vite migration would include: adding `@vitejs/plugin-react` and `vite.config.js` with `server.open: true`; moving `index.html` to the frontend root with a module script; renaming `REACT_APP_API_URL` to `VITE_API_URL`; and changing the output directory to `dist/`. The `react-app` ESLint config does not depend on the bundler, so it can stay: `eslint-config-react-app` and the packages it currently gets through `react-scripts` must be added as direct devDependencies, and ESLint must stay on v8 because `npm run lint` uses `--ext`. Vite 7 requires Node 20.19 or newer, so `.nvmrc` would need updating too.
