@@ -110,7 +110,7 @@ This document explains how we solved each task in [ASSIGNMENT.md](../ASSIGNMENT.
 
 **What:**
 - Backend: `npm audit fix` moved Express from 4.19.2 to 4.22.3 with no breaking changes. The backend now reports 0 vulnerabilities.
-- Frontend: non-breaking fixes reduced findings from 74 to 32 and removed all critical ones. The rest came from `react-scripts` 5, which was later removed in favour of Vite ([ADR 0005](adr/0005-migrate-frontend-to-vite.md)).
+- Frontend: non-breaking fixes removed most findings and all critical ones. One way to remove many of the rest is to switch from `react-scripts` to Vite ([ADR 0005](adr/0005-migrate-frontend-to-vite.md)).
 
 **Why:** we only applied fixes that don't change behavior. Each breaking change should be a deliberate choice.
 
