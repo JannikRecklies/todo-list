@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   createTodoList,
   deleteTodoList,
@@ -41,10 +41,12 @@ export const useTodoLists = () => {
     setActiveListId(createdList.id)
   }
 
-  const saveList = async (id, changes) => {
+  // Stable identity: the form's cleanup effect depends on it, and a new function on every render
+  // would trigger that cleanup early and send an edit before its delay is over.
+  const saveList = useCallback(async (id, changes) => {
     const savedList = await saveTodoList(id, changes)
     setTodoLists((lists) => ({ ...lists, [id]: savedList }))
-  }
+  }, [])
 
   const deleteList = async (id) => {
     await deleteTodoList(id)

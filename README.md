@@ -20,7 +20,7 @@ The app is split into two parts:
 - **Frontend** (`frontend/`): a Vite single-page app using Material UI. `TodoLists` ties the screen together using the `useTodoLists` hook (which loads and saves through `api.js`), `TodoListOverview` lists the todo lists, `TodoListForm` edits the selected one, and two dialogs create and delete lists.
 - **Backend** (`backend/`): an Express server with CORS and JSON body parsing. `app.js` sets up Express, `todoListRoutes.js` exposes and validates the CRUD routes under `/api/todo-lists`, `todoListStore.js` reads and writes lists and todos, and `database.js` opens the server-local SQLite file and sets up its tables.
 
-The frontend's `api.js` client sends HTTP/JSON requests to the backend. Title and todo edits stay local until **Save**; creating or deleting a list sends a request immediately. All visitors share the same stored collection. There is no live synchronization: other browsers load the latest data on refresh.
+The frontend's `api.js` client sends HTTP/JSON requests to the backend. Title and todo edits are saved automatically one second after the user stops typing, and removing a todo saves immediately; blank todos are never sent. A failed save shows an error above the form. Creating or deleting a list sends a request immediately. All visitors share the same stored collection. There is no live synchronization: other browsers load the latest data on refresh.
 
 The diagram source is [docs/diagrams/architecture.html](docs/diagrams/architecture.html).
 
