@@ -1,6 +1,6 @@
 # Assignment explanation
 
-This document explains how we solved each task in [ASSIGNMENT.md](assignment/ASSIGNMENT.md), why, and which alternatives we rejected. Each section follows the same structure: **What**, **Why**, and **Alternatives**. Binding decisions are recorded in the [ADRs](../adr/).
+This document explains how we solved each task in [ASSIGNMENT.md](ASSIGNMENT.md), why, and which alternatives we rejected. Each section follows the same structure: **What**, **Why**, and **Alternatives**. Binding decisions are recorded in the [ADRs](../adr/).
 
 ## Main task: persist todo lists on the server
 
