@@ -8,14 +8,14 @@ export const createTodoListStore = (databasePath) => {
     const list = database.prepare('SELECT id, title FROM todo_list WHERE id = ?').get(id)
     if (!list) return null
 
-    return { id: list.id, title: list.title, todos: findTodoTexts(id) }
+    return { id: list.id, title: list.title, todos: findTodos(id) }
   }
 
-  const findTodoTexts = (listId) => {
+  const findTodos = (listId) => {
     const rows = database
-      .prepare('SELECT text FROM todo WHERE list_id = ? ORDER BY position')
+      .prepare('SELECT text, completed FROM todo WHERE list_id = ? ORDER BY position')
       .all(listId)
-    return rows.map((row) => row.text)
+    return rows.map((row) => ({ text: row.text, completed: row.completed === 1 }))
   }
 
   const findAllListIds = () => {
@@ -30,17 +30,17 @@ export const createTodoListStore = (databasePath) => {
     return row.position
   }
 
-  const insertTodos = (listId, texts) => {
-    texts.forEach((text, position) => {
+  const insertTodos = (listId, todos) => {
+    todos.forEach(({ text, completed }, position) => {
       database
-        .prepare('INSERT INTO todo (list_id, position, text) VALUES (?, ?, ?)')
-        .run(listId, position, text)
+        .prepare('INSERT INTO todo (list_id, position, text, completed) VALUES (?, ?, ?, ?)')
+        .run(listId, position, text, completed ? 1 : 0)
     })
   }
 
-  const replaceTodos = (listId, texts) => {
+  const replaceTodos = (listId, todos) => {
     database.prepare('DELETE FROM todo WHERE list_id = ?').run(listId)
-    insertTodos(listId, texts)
+    insertTodos(listId, todos)
   }
 
   const getAll = () => {

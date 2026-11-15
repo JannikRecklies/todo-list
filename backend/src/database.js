@@ -40,6 +40,7 @@ const createTables = (database) => {
       list_id TEXT NOT NULL REFERENCES todo_list(id) ON DELETE CASCADE,
       position INTEGER NOT NULL,
       text TEXT NOT NULL,
+      completed INTEGER NOT NULL DEFAULT 0 CHECK (completed IN (0, 1)),
       PRIMARY KEY (list_id, position)
     );
 

@@ -78,20 +78,29 @@ test('supports list CRUD over HTTP and rejects invalid requests', async () => {
       server,
       `/api/todo-lists/${created.body.id}`,
       'PUT',
-      { title: 'Renamed list', todos: ['First todo', ''] }
+      {
+        title: 'Renamed list',
+        todos: [
+          { text: 'First todo', completed: true },
+          { text: '', completed: false },
+        ],
+      }
     )
     assert.equal(updated.status, 200)
     assert.deepEqual(updated.body, {
       id: created.body.id,
       title: 'Renamed list',
-      todos: ['First todo', ''],
+      todos: [
+        { text: 'First todo', completed: true },
+        { text: '', completed: false },
+      ],
     })
 
     const invalidUpdate = await sendRequest(
       server,
       `/api/todo-lists/${created.body.id}`,
       'PUT',
-      { title: 'Renamed list', todos: [1] }
+      { title: 'Renamed list', todos: ['First todo'] }
     )
     assert.equal(invalidUpdate.status, 400)
 

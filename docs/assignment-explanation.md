@@ -68,7 +68,7 @@ This document explains how we solved each task in [ASSIGNMENT.md](../ASSIGNMENT.
 ### Main 6. Validation, CORS, and ports
 
 **What:**
-- Titles must be non-blank strings and todos an array of strings. Invalid input gets `400`; unknown IDs get `404`.
+- Titles must be non-blank strings and todos an array of `{ text, completed }` objects. Invalid input gets `400`; unknown IDs get `404`.
 - `cors()` is in `app.js`, because the frontend runs on a different port.
 - The backend uses `PORT` (default `3001`); the frontend uses `VITE_API_URL`.
 
@@ -172,7 +172,42 @@ These affect how to work on the project:
 
 ## Additional task 2: mark a todo as completed
 
-_Not started._
+**Problem:** a todo could not be marked as done, so finished items looked the same as open ones.
+
+**Agreed scope before coding** (issue [#4](https://github.com/JannikRecklies/todo-list/issues/4)):
+- A checkbox marks a todo completed or open again.
+- A completed todo's text is struck through and stays in its list.
+- Only a yes/no flag is stored, with no completion date.
+- Editing a todo's text keeps its completed state.
+- Toggling saves immediately ([ADR 0007](adr/0007-todo-completed-state.md)).
+
+### Additional 2.1 Todo shape
+
+**What:** a todo changes from a string to `{ text, completed }`. The `todo` table gets a `completed INTEGER NOT NULL DEFAULT 0 CHECK (completed IN (0, 1))` column. The store reads and writes it, and the route validates each todo as an object.
+
+**Why:** completion belongs to the todo, and the save replaces all todos by position ([ADR 0003](adr/0003-todo-schema.md)). Storing the flag with each todo keeps it attached through every save.
+
+**Alternatives:**
+- *Separate completion table keyed by list and position:* positions are reassigned on each save, so a completed flag would move to a different todo after a delete or reorder.
+- *Keeping strings and sending completion in a second field:* two parallel arrays that must stay in sync.
+
+**Trade-off:** this changes the API. A request that still sends strings gets `400`. The frontend and backend ship together.
+
+### Additional 2.2 Saving a toggle
+
+**What:** toggling completion sends the list immediately, like removing a todo.
+
+**Why:** a toggle is a single deliberate click with no typing to wait for, so a delay would only make the checkbox feel slow.
+
+**Alternatives:** the 1000 ms pause used for text edits, which adds a delay with nothing to protect.
+
+### Additional 2.3 Display and editing
+
+**What:** the checkbox sits before the text, and completed text is struck through. Editing the text does not change completion.
+
+**Why:** the strikethrough shows the state without hiding the text. Keeping the state on edit means fixing a typo does not reopen a finished todo.
+
+**Alternatives:** resetting to open on edit, which would surprise users who only corrected a word.
 
 ## Additional task 3: mark a todo list as completed
 
@@ -199,5 +234,7 @@ _Not started._
 | Main 10 Docs | Glossary, ADRs, README |
 | Main 11 Dependencies | Non-breaking fixes only |
 | Main 12 Environment | Known npm, editor, and Node pitfalls |
+| Additional 1 Autosave | Debounced text edits; immediate removal; no Save button |
+| Additional 2 Completion | `completed` flag on each todo; toggle saves immediately |
 
 **Open items:** no migration for plural-named databases; 32 frontend vulnerabilities remain; no authentication.
