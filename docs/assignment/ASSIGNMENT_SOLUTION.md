@@ -200,6 +200,40 @@ This document explains how we solved each task in [ASSIGNMENT.md](ASSIGNMENT.md)
 
 **Alternatives:** resetting to open on edit, which would surprise users who only corrected a word.
 
+## Improve design (not part of the assignment tasks)
+
+**Problem:** the frontend worked but looked unpolished. The lists were stacked above the selected list's todos, the selected list was hard to see, and a todo row had numbering, boxed inputs, and a bin icon.
+
+**Agreed scope before coding**:
+- Visual only. No backend, API, or save-behavior changes.
+- Palette limited to blue, red, grey, white, and black.
+- Keep the simple structure and the existing list-delete confirmation.
+
+### Design 1. Layout and selected list
+
+**What:** the lists move into a left sidebar and the selected list's todos fill the main area. On narrow screens the sidebar becomes a drawer opened from a menu button. The selected list is a solid blue item with a check mark. The header is blue.
+
+**Why:** the user always sees the lists and the open list side by side, and the selection is obvious.
+
+**Alternatives:**
+- *Keep lists above the todos:* the lists push the todos down the page as they grow.
+- *Heading with the list name:* redundant, because the title is already the first field of the form.
+
+### Design 2. Todo rows
+
+**What:** each todo is a flat row with a thin grey divider. A round checkbox on the left completes it (grey, struck-through text). A small grey "x" on the right deletes it and turns red on hover. Row numbers and boxed inputs are gone. "Add todo" still appends an empty row, which gets focus.
+
+**Why:** the state is readable at a glance, and the destructive action is quiet until needed. Deleting a todo stays immediate, as before.
+
+**Alternatives:**
+- *Cards per todo:* heavier and noisier than dividers.
+
+### Design 3. Shared theme
+
+**What:** `index.jsx` defines one MUI theme (blue primary, red error, greys) and components refer to its colors instead of hard-coded values.
+
+**Why:** the palette stays consistent and can be changed in one place.
+
 ## Additional task 3: mark a todo list as completed
 
 _Not started._

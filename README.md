@@ -6,7 +6,7 @@ A small todo list app built with React and Express. Users can browse todo lists 
 
 ## Features
 
-- Browse a set of todo lists in a sidebar card
+- Browse todo lists in a sidebar (a drawer on narrow screens); the selected list is highlighted in blue
 - Open a list to edit its todos, add new ones, and delete existing ones
 - Mark todos as completed or unmark them; completed todos are struck through and saved
 - Create, rename, and delete todo lists
@@ -18,10 +18,10 @@ A small todo list app built with React and Express. Users can browse todo lists 
 
 ### Frontend (`frontend/`)
 
-- Vite single-page app using Material UI
+- Vite single-page app using Material UI, with a shared blue/red/grey theme in `index.jsx`
 - `TodoLists` ties the screen together
 - `useTodoLists` hook loads and saves through `api.js`
-- `TodoListOverview` lists the todo lists
+- `TodoListOverview` is the sidebar that lists the todo lists
 - `TodoListForm` edits the selected list
 - Two dialogs create and delete lists
 

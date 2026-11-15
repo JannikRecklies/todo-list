@@ -1,12 +1,28 @@
-import React from 'react'
-import { AppBar, Toolbar, Typography } from '@mui/material'
+import React, { useState } from 'react'
+import { AppBar, IconButton, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
 import { TodoLists } from './todos/components/TodoLists'
 
-const MainAppBar = () => {
+const MainAppBar = ({ onOpenNavigation, isMobile }) => {
   return (
-    <AppBar position='static' color='primary'>
-      <Toolbar>
-        <Typography variant='h6' color='inherit'>
+    <AppBar
+      position='static'
+      elevation={0}
+      sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}
+    >
+      <Toolbar sx={{ minHeight: 64 }}>
+        {isMobile && (
+          <IconButton
+            edge='start'
+            color='inherit'
+            aria-label='Open lists'
+            onClick={onOpenNavigation}
+            sx={{ mr: 1 }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+        <Typography variant='h6' component='h1' sx={{ fontWeight: 700, letterSpacing: '-0.03em' }}>
           Things to do
         </Typography>
       </Toolbar>
@@ -14,30 +30,22 @@ const MainAppBar = () => {
   )
 }
 
-const mainWrapperStyle = { display: 'flex', flexDirection: 'column' }
-const centerContentWrapper = { display: 'flex', justifyContent: 'center' }
-const contentWrapperStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  maxWidth: '80rem',
-  flexGrow: 1,
-}
-const MainWrapper = ({ children }) => {
-  return (
-    <div style={mainWrapperStyle}>
-      <MainAppBar />
-      <div style={centerContentWrapper}>
-        <div style={contentWrapperStyle}>{children}</div>
-      </div>
-    </div>
-  )
-}
-
 const App = () => {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const [isNavigationOpen, setIsNavigationOpen] = useState(false)
+
   return (
-    <MainWrapper>
-      <TodoLists style={{ margin: '1rem' }} />
-    </MainWrapper>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <MainAppBar
+        isMobile={isMobile}
+        onOpenNavigation={() => setIsNavigationOpen(true)}
+      />
+      <TodoLists
+        isNavigationOpen={isNavigationOpen}
+        onCloseNavigation={() => setIsNavigationOpen(false)}
+      />
+    </div>
   )
 }
 

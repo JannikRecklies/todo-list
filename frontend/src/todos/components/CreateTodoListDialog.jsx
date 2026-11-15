@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   Alert,
   Button,
@@ -13,6 +13,7 @@ export const CreateTodoListDialog = ({ open, onClose, onCreate }) => {
   const [title, setTitle] = useState('')
   const [error, setError] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const titleInput = useRef(null)
 
   const close = () => {
     if (!isCreating) onClose()
@@ -35,13 +36,20 @@ export const CreateTodoListDialog = ({ open, onClose, onCreate }) => {
   }
 
   return (
-    <Dialog open={open} onClose={close} fullWidth maxWidth='xs'>
+    <Dialog
+      open={open}
+      onClose={close}
+      keepMounted
+      fullWidth
+      maxWidth='xs'
+      TransitionProps={{ onEnter: () => titleInput.current?.focus() }}
+    >
       <form onSubmit={handleSubmit}>
         <DialogTitle>Create a todo list</DialogTitle>
         <DialogContent>
           {error && <Alert severity='error'>{error}</Alert>}
           <TextField
-            autoFocus
+            inputRef={titleInput}
             required
             fullWidth
             margin='dense'
