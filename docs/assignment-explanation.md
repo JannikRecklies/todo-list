@@ -70,7 +70,7 @@ This document explains how we solved each task in [ASSIGNMENT.md](../ASSIGNMENT.
 **What:**
 - Titles must be non-blank strings and todos an array of strings. Invalid input gets `400`; unknown IDs get `404`.
 - `cors()` is in `app.js`, because the frontend runs on a different port.
-- The backend uses `PORT` (default `3001`); the frontend uses `REACT_APP_API_URL`.
+- The backend uses `PORT` (default `3001`); the frontend uses `VITE_API_URL`.
 
 **Why:** the server must enforce rules because browser checks can be bypassed. Ports come from the environment because deployments assign them.
 
@@ -110,11 +110,11 @@ This document explains how we solved each task in [ASSIGNMENT.md](../ASSIGNMENT.
 
 **What:**
 - Backend: `npm audit fix` moved Express from 4.19.2 to 4.22.3 with no breaking changes. The backend now reports 0 vulnerabilities.
-- Frontend: non-breaking fixes reduced findings from 74 to 32 and removed all critical ones. The rest come from `react-scripts` 5.
+- Frontend: non-breaking fixes removed most findings and all critical ones. One way to remove many of the rest is to switch from `react-scripts` to Vite ([ADR 0005](adr/0005-migrate-frontend-to-vite.md)).
 
 **Why:** we only applied fixes that don't change behavior. Each breaking change should be a deliberate choice.
 
-**Alternatives:** `npm audit fix --force`, which can introduce breaking changes, and migrating to Vite, which would remove most remaining findings but is a larger change we have not made.
+**Alternatives:** `npm audit fix --force`, which can introduce breaking changes, and migrating to Vite, which removed the remaining findings in a later change ([ADR 0005](adr/0005-migrate-frontend-to-vite.md)).
 
 ### Main 12. Environment problems
 
