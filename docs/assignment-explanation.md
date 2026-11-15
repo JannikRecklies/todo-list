@@ -193,15 +193,7 @@ These affect how to work on the project:
 
 **Trade-off:** this changes the API. A request that still sends strings gets `400`. The frontend and backend ship together.
 
-### Additional 2.2 Existing databases
-
-**What:** on startup, if the `todo` table has no `completed` column, it is added with `ALTER TABLE`. Existing todos read as not completed.
-
-**Why:** `CREATE TABLE IF NOT EXISTS` does not change an existing table, so the column would be missing and every read would fail. Adding the column keeps the user's data.
-
-**Alternatives:** deleting the database file, as the plural-name gap in Main 2 required. That would lose the user's lists.
-
-### Additional 2.3 Saving a toggle
+### Additional 2.2 Saving a toggle
 
 **What:** toggling completion sends the list immediately, like removing a todo.
 
@@ -209,7 +201,7 @@ These affect how to work on the project:
 
 **Alternatives:** the 1000 ms pause used for text edits, which adds a delay with nothing to protect.
 
-### Additional 2.4 Display and editing
+### Additional 2.3 Display and editing
 
 **What:** the checkbox sits before the text, and completed text is struck through. Editing the text does not change completion.
 
