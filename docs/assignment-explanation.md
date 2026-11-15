@@ -110,7 +110,7 @@ This document explains how we solved each task in [ASSIGNMENT.md](../ASSIGNMENT.
 
 **What:**
 - Backend: `npm audit fix` moved Express from 4.19.2 to 4.22.3 with no breaking changes. The backend now reports 0 vulnerabilities.
-- Frontend: non-breaking fixes reduced findings from 74 to 32 and removed all critical ones. The rest come from `react-scripts` 5.
+- Frontend: non-breaking fixes reduced findings from 74 to 32 and removed all critical ones. The rest come from `react-scripts` 5, which is no longer maintained (latest release April 2022), so no fix is available without replacing it. We keep it because the assignment uses it; see [ADR 0004](adr/0004-keep-pinned-toolchain-versions.md).
 
 **Why:** we only applied fixes that don't change behavior. Each breaking change should be a deliberate choice.
 

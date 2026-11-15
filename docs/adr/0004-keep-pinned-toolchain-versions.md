@@ -8,7 +8,7 @@ The assignment asks to run the project with the Node version in `.nvmrc` (Node 2
 |---|---|---|
 | Node.js | 20 (`.nvmrc`) | Pinned by the assignment. |
 | `better-sqlite3` | `^11.10.0` | Version 13 requires Node 22, which would break the pinned Node 20. |
-| `react-scripts` | `^5.0.1` | Pinned by the assignment's frontend setup. Its remaining audit findings are build-time dependencies. |
+| `react-scripts` | `^5.0.1` | Pinned by the assignment's frontend setup. It is no longer maintained: 5.0.1 (April 2022) is the latest stable release, and the React team sunset Create React App in February 2025. Its audit findings come from old dependencies that no release fixes, so they cannot reach zero while it is used. |
 | Express | `^4.19.2` (lock: 4.22.3) | Non-breaking `npm audit fix` applied; 0 backend findings. |
 | ESLint | `^8.57.0` (backend) | Matches the lint setup the assignment uses. |
 
@@ -23,7 +23,7 @@ The assignment asks to run the project with the Node version in `.nvmrc` (Node 2
 ## What leaving the versions this way means
 
 - Node 20 reached end-of-life in April 2026, so it no longer receives security fixes. Acceptable for an interview task, not for production.
-- The frontend keeps the remaining audit findings from `react-scripts` 5. These are mostly in build tooling, not the code served to the browser.
+- The frontend keeps the remaining audit findings from `react-scripts` 5. These are mostly in build tooling, not the code served to the browser. Running `npm install` will always show them, and `npm audit fix --force` is not a fix: it replaces `react-scripts` with `0.0.0`, which removes the start command.
 - Anyone running the project must use Node 20 (`nvm use`). Other versions can break `npm ci` or `npm start`.
 - The upgrade decision is deferred, not rejected. It needs an agreed Node version from the interviewers first.
 
