@@ -22,11 +22,10 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
   const [title, setTitle] = useState(todoList.title)
   const [todos, setTodos] = useState(todoList.todos)
   const [error, setError] = useState('')
-  // The save waiting for its delay, as { timer, todoListToSave }. Only one is ever waiting.
-  const pendingTodoListSave = useRef(null)
+  const saveTimer = useRef(null) // Holds the timer ID for the scheduled save
+  const saveNow = useRef(null) // Holds the function to save the edit immediately if needed
 
   const save = async (todoListToSave) => {
-    pendingTodoListSave.current = null
     try {
       await saveTodoList(todoList.id, todoListToSave)
       setError('')
@@ -36,25 +35,27 @@ export const TodoListForm = ({ todoList, saveTodoList, deleteTodoList }) => {
   }
 
   const scheduleSave = (nextTitle, nextTodos, delay) => {
-    clearTimeout(pendingTodoListSave.current?.timer)
-    pendingTodoListSave.current = null
+    clearTimeout(saveTimer.current)
+    saveNow.current = null
 
-    const updatedTodoList = normalizeTodoList(nextTitle, nextTodos)
-    if (!updatedTodoList.title) return
+    const todoListToSave = normalizeTodoList(nextTitle, nextTodos)
+    if (!todoListToSave.title) return
 
-    const todoListSaveTimer = setTimeout(() => save(updatedTodoList), delay)
-    pendingTodoListSave.current = { todoListToSave: updatedTodoList, timer: todoListSaveTimer }
+    const saveEditNow = () => {
+      clearTimeout(saveTimer.current)
+      saveNow.current = null
+      save(todoListToSave)
+    }
+    saveTimer.current = setTimeout(saveEditNow, delay)
+    saveNow.current = saveEditNow
   }
 
-  // Switching lists unmounts the form, so send the edit that is still waiting for its delay.
-  useEffect(
-    () => () => {
-      if (!pendingTodoListSave.current) return
-      clearTimeout(pendingTodoListSave.current.timer)
-      saveTodoList(todoList.id, pendingTodoListSave.current.todoListToSave).catch(() => {})
-    },
-    [todoList.id, saveTodoList],
-  )
+  // Switching lists unmounts the form: stop the timer and save the waiting edit now.
+  useEffect(() => {
+    return () => {
+      if (saveNow.current) saveNow.current()
+    }
+  }, [])
 
   const changeTitle = (newTitle) => {
     setTitle(newTitle)
