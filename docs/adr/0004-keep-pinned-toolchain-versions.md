@@ -1,33 +1,15 @@
 # Keep the toolchain versions pinned by the assignment
 
-The assignment asks to run the project with the Node version in `.nvmrc` (Node 20), and the interviewers run it the same way. Upgrading Node or major dependencies would force every reviewer to change their setup, and would add changes that are not part of the task. Therefore the current versions and record the known risks are kept.
+## Decision
 
-## Pinned versions
-
-| Component | Version | Why it stays |
-|---|---|---|
-| Node.js | 20 (`.nvmrc`) | Pinned by the assignment. |
-| `better-sqlite3` | `^11.10.0` | Version 13 requires Node 22, which would break the pinned Node 20. |
-| `react-scripts` | `^5.0.1` | Pinned by the assignment's frontend setup. It is no longer maintained: 5.0.1 (April 2022) is the latest stable release, and the React team sunset Create React App in February 2025. Its audit findings come from old dependencies that no release fixes, so they cannot reach zero while it is used. |
-| Express | `^4.19.2` (lock: 4.22.3) | Non-breaking `npm audit fix` applied; 0 backend findings. |
-| ESLint | `^8.57.0` (backend) | Matches the lint setup the assignment uses. |
-
-## Upgrades to be done in the future
-
-- **Upgrade to Node 22:** supported and needed before Node 20 stops getting security fixes, but it changes the setup the assignment asks for. Revisit once the interviewers agree to a new Node version.
-- **Migrate the frontend to Vite:** removes most `react-scripts` audit findings but changes `npm start`, the build, and the ESLint config. Revisit if the frontend is kept beyond the assignment.
-- **`npm audit fix --force`:** can introduce breaking changes in one step. Do not use it unless each change is reviewed.
-- **`overrides` in `frontend/package.json`:** would fix specific transitive packages without a major upgrade. Revisit if the findings must go down before a Node or Vite change, and test the build and app after each override.
-- **`better-sqlite3` 13:** needs Node 22. Revisit together with the Node upgrade.
-
-## What leaving the versions this way means
-
-- Node 20 reached end-of-life in April 2026, so it no longer receives security fixes. Acceptable for an interview task, not for production.
-- The frontend keeps the remaining audit findings from `react-scripts` 5. These are mostly in build tooling, not the code served to the browser. Running `npm install` will always show them, and `npm audit fix --force` is not a fix: it replaces `react-scripts` with `0.0.0`, which removes the start command.
-- Anyone running the project must use Node 20 (`nvm use`). Other versions can break `npm ci` or `npm start`.
-- The upgrade decision is deferred, not rejected. It needs an agreed Node version from the interviewers first.
+We keep Node 20, `react-scripts` 5, `better-sqlite3` 11, Express 4, and ESLint 8. The assignment pins Node 20 and uses `react-scripts`, and reviewers run the project that way. Changing them would make every reviewer change their setup, which is outside the task.
 
 ## Consequences
 
-- The ADR is the single record for these versions. `docs/assignment-explanation.md` (Main 11 and 12) links here.
-- When a version changes, update the table above and the `.nvmrc` or `package.json` in the same change.
+- **Node 20 is end-of-life** (April 2026) and gets no security fixes. Acceptable for an interview task, not for production.
+- **`react-scripts` is no longer maintained.** Its latest stable release is 5.0.1 (April 2022), and Create React App was sunset in February 2025. Its audit findings cannot reach zero while it is used. `npm audit fix --force` is not a fix, since it replaces `react-scripts` with `0.0.0`.
+- Anyone running the project must use Node 20 (`nvm use`).
+
+## Revisit when
+
+The interviewers agree on a newer Node version, or the frontend is kept beyond the assignment. Then upgrade Node (and `better-sqlite3` to 13, which needs Node 22) and migrate the frontend to Vite. Update this ADR and `.nvmrc` or `package.json` in the same change.

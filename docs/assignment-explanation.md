@@ -106,19 +106,7 @@ This document explains how we solved each task in [ASSIGNMENT.md](../ASSIGNMENT.
 
 **Why:** shared names prevent confusion in code and discussion, and decisions sit next to their pictures.
 
-### Main 11. Dependencies
-
-**What:**
-- Backend: `npm audit fix` moved Express from 4.19.2 to 4.22.3 with no breaking changes. The backend now reports 0 vulnerabilities.
-- Frontend: non-breaking fixes reduced findings from 74 to 32 and removed all critical ones. The rest come from `react-scripts` 5, which is no longer maintained (latest release April 2022), so no fix is available without replacing it. We keep it because the assignment uses it; see [ADR 0004](adr/0004-keep-pinned-toolchain-versions.md).
-
-**Why:** we only applied fixes that don't change behavior. Each breaking change should be a deliberate choice.
-
-**Alternatives:** `npm audit fix --force`, which can introduce breaking changes, and migrating to Vite, which would remove most remaining findings but is a larger change we have not made.
-
-**Kept versions:** Node 20, `better-sqlite3` 11, `react-scripts` 5, Express 4.22, and ESLint 8 stay as they are. The assignment pins Node 20, and reviewers run it that way. The full list, the options we skipped, and what leaving them means are in [ADR 0004](adr/0004-keep-pinned-toolchain-versions.md).
-
-### Main 12. Environment problems
+### Main 11. Environment problems
 
 These affect how to work on the project:
 - **npm cache corruption** caused `npm ci` to fail with ENOENT. Fix: `npm cache clean --force`, or use a temporary cache with `--cache`.
@@ -157,7 +145,6 @@ _Not started._
 | Main 8 Frontend | Small components and a hook |
 | Main 9 Diagram | One architecture diagram |
 | Main 10 Docs | Glossary, ADRs, README |
-| Main 11 Dependencies | Non-breaking fixes only; versions kept as pinned by the assignment (ADR 0004) |
-| Main 12 Environment | Known npm, editor, and Node pitfalls |
+| Main 11 Environment | Known npm, editor, and Node pitfalls |
 
-**Open items:** no migration for plural-named databases; 32 frontend vulnerabilities remain; no authentication.
+**Open items:** no migration for plural-named databases; no authentication. Toolchain versions are in [ADR 0004](adr/0004-keep-pinned-toolchain-versions.md).
